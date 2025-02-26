@@ -1,8 +1,9 @@
-from bottle import Bottle, template, request, redirect, static_file
+from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
 import os
+import re
 
-app = Bottle()
+app = Flask(__name__, template_folder='views')
 
 # Configuration de la base de données
 db_config = {
@@ -19,7 +20,6 @@ def initialize_database():
     """
     Initialisation de la base de données
     """
-
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -51,35 +51,53 @@ def initialize_database():
         cursor.close()
         conn.close()
 
-@app.route('/static/<filename:path>', name='static')
-def serve_static(filename):
-    return static_file(filename, root='./')
+def validate_field(field, regex):
+    # Exemple de regex pour valider les champs (par exemple, accepter uniquement les lettres et les chiffres)
+    pattern = re.compile(regex)
+    if not pattern.match(field):
+        return f"Invalid input. Only letters and numbers are allowed."
+    return None
 
-@app.route('/', method=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """
     Affichage de la page d'accueil du site et interactions avec la base de données
     """
-
     entries = []
+    error_messages = {}
+
     if request.method == 'POST':
-        nom = request.forms.get('champ_nom')
-        fonction = request.forms.get('champ_fonction')
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('INSERT INTO formulaire (nom, fonction) VALUES (%s, %s)', (nom, fonction))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        redirect('/')
+        nom = request.form.get('champ_nom')
+        fonction = request.form.get('champ_fonction')
+
+        # Validate each field
+        error_messages['champ_nom'] = validate_field(nom, r'^[a-zA-Z0-9]+$')
+        error_messages['champ_fonction'] = validate_field(fonction, r'^[a-zA-Z0-9]+$')
+
+        if not any(error_messages.values()):
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            try:
+                cursor.execute('INSERT INTO formulaire (nom, fonction) VALUES (%s, %s)', (nom, fonction))
+                conn.commit()
+            except mysql.connector.Error as err:
+                print(f"Error inserting data: {err}")
+            finally:
+                cursor.close()
+                conn.close()
+            return redirect(url_for('index'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM formulaire')
-    entries = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return template('index', entries=entries)
+    try:
+        cursor.execute('SELECT * FROM formulaire')
+        entries = cursor.fetchall()
+    except mysql.connector.Error as err:
+        print(f"Error fetching data: {err}")
+    finally:
+        cursor.close()
+        conn.close()
+    return render_template('index.html', entries=entries, error_messages=error_messages)
 
 if __name__ == '__main__':
     initialize_database()

@@ -4,7 +4,7 @@ This application is made up of 3 Docker containers :
 
 |   Service   |     Software     | Port  |              Description              |
 | :---------: | :--------------: | :---: | :-----------------------------------: |
-|   Web app   |  Bottle 0.13.2   | 12345 |   Python webserver running the app    |
+|   Web app   |   Flask 3.1.0    | 12345 |   Python webserver running the app    |
 |     DB      |   MariaDB 10.6   | 3306  |               Database                |
 | DB frontend | phpMyAdmin 5.2.2 | 12346 | Web interface for database management |
 
