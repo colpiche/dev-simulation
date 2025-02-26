@@ -3,6 +3,9 @@ import mysql.connector
 import os
 import re
 
+# Found here : https://a-tokyo.medium.com/first-and-last-name-validation-for-forms-and-databases-d3edf29ad29d
+REGEX_NOM = "^[a-zA-Z\xC0-\uFFFF]+([ \-']{0,1}[a-zA-Z\xC0-\uFFFF]+){0,2}[.]{0,1}$"
+
 app = Flask(__name__, template_folder='views')
 
 # Configuration de la base de données
@@ -52,10 +55,13 @@ def initialize_database():
         conn.close()
 
 def validate_field(field, regex):
-    # Exemple de regex pour valider les champs (par exemple, accepter uniquement les lettres et les chiffres)
+    '''
+    Utilisation de regex pour la vérification des données du champ
+    '''
+
     pattern = re.compile(regex)
     if not pattern.match(field):
-        return f"Invalid input. Only letters and numbers are allowed."
+        return f"Invalid input."
     return None
 
 @app.route('/', methods=['GET', 'POST'])
@@ -70,10 +76,11 @@ def index():
         nom = request.form.get('champ_nom')
         fonction = request.form.get('champ_fonction')
 
-        # Validate each field
-        error_messages['champ_nom'] = validate_field(nom, r'^[a-zA-Z0-9]+$')
-        error_messages['champ_fonction'] = validate_field(fonction, r'^[a-zA-Z0-9]+$')
+        # Validation des champs
+        error_messages['champ_nom'] = validate_field(nom, REGEX_NOM)
+        error_messages['champ_fonction'] = validate_field(fonction, r'')
 
+        # Insertion des valeurs dans la base si tous les champs sont valides
         if not any(error_messages.values()):
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -89,6 +96,7 @@ def index():
 
     conn = get_db_connection()
     cursor = conn.cursor()
+
     try:
         cursor.execute('SELECT * FROM formulaire')
         entries = cursor.fetchall()
