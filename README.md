@@ -26,7 +26,7 @@ Cd dans le dossier :
 cd dev-simulation
 ```
 
-Déployer la stack
+Déployer la stack :
 ```bash
 docker compose up -d
 ```
@@ -48,7 +48,7 @@ http://ip-of-your-server:12345/
 
 ### Procédure de test
  - Lancer la stack Docker
- - Lancer Chrome et se rendre sur la page web (http://127.0.0.1:12345/)
+ - Lancer Chrome et se rendre sur la page web (http://ip-of-your-server:12345/)
  - Lancer le GUI de Sikuli et ouvrir le script voulu
  - S'assurer que la fenêtre de Chrome soit en plein écran et qu'elle ne soit recouverte pas aucune autre (à part Sikuli)
  - Lancer le script
