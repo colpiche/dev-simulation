@@ -17,20 +17,17 @@
         {% if error_messages.champ_fonction %}
             <div style="color: red;">{{ error_messages.champ_fonction }}</div>
         {% endif %}
-        <!--
-        <input type="date" id="champ_date_permis" name="champ_date_permis" placeholder="Date du permis"><br><br>
+        <input type="text" id="champ_date_permis" name="champ_date_permis" placeholder="Date du permis (AAAA-MM-JJ)"><br><br>
         {% if error_messages.champ_date_permis %}
             <div style="color: red;">{{ error_messages.champ_date_permis }}</div>
         {% endif %}
-        -->
         <input type="submit" value="Envoyer">
     </form>
 
     <h2>Entrées de la base de données</h2>
     <ul>
         {% for entry in entries %}
-            <li>{{ entry[1] }} : {{ entry[2] }}</li>
-            <!--<li>{{ entry[1] }} : {{ entry[2] }} - Permis obtenu le {{ entry[3] }}</li>-->
+            <li>{{ entry[1] }} : {{ entry[2] }} - Permis obtenu le {{ entry[3] }}</li>
         {% endfor %}
     </ul>
 </body>

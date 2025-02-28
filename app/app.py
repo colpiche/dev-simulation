@@ -2,11 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
 import os
 import re
-# from datetime import datetime
+from datetime import datetime
 
 # Found here : https://a-tokyo.medium.com/first-and-last-name-validation-for-forms-and-databases-d3edf29ad29d
 REGEX_NOM = r"^[a-zA-Z\xC0-\uFFFF]+([ \-']{0,1}[a-zA-Z\xC0-\uFFFF]+){0,2}[.]{0,1}$"
-# REGEX_DATE = r"^\d{4}-\d{2}-\d{2}$"  # Format YYYY-MM-DD
 
 app = Flask(__name__, template_folder='views')
 
@@ -37,29 +36,16 @@ def initialize_database():
                 CREATE TABLE IF NOT EXISTS formulaire (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     nom VARCHAR(255) NOT NULL,
-                    fonction VARCHAR(255) NOT NULL
+                    fonction VARCHAR(255) NOT NULL,
+                    date_permis DATE NOT NULL
                 );
             """)
             cursor.execute("""
-                INSERT INTO formulaire (nom, fonction) VALUES
-                ('Alice', 'Développeuse'),
-                ('Bob', 'Designer'),
-                ('Charlie', 'Chef de projet');
+                INSERT INTO formulaire (nom, fonction, date_permis) VALUES
+                ('Alice', 'Développeuse', '2020-01-15'),
+                ('Bob', 'Designer', '2019-05-20'),
+                ('Charlie', 'Chef de projet', '2018-08-30');
             """)
-            # cursor.execute("""
-            #     CREATE TABLE IF NOT EXISTS formulaire (
-            #         id INT AUTO_INCREMENT PRIMARY KEY,
-            #         nom VARCHAR(255) NOT NULL,
-            #         fonction VARCHAR(255) NOT NULL,
-            #         date_permis DATE NOT NULL
-            #     );
-            # """)
-            # cursor.execute("""
-            #     INSERT INTO formulaire (nom, fonction, date_permis) VALUES
-            #     ('Alice', 'Développeuse', '2020-01-15'),
-            #     ('Bob', 'Designer', '2019-05-20'),
-            #     ('Charlie', 'Chef de projet', '2018-08-30');
-            # """)
             conn.commit()
             print("Table 'formulaire' created successfully.")
         else:
@@ -70,7 +56,7 @@ def initialize_database():
         cursor.close()
         conn.close()
 
-def validate_field(field, regex):
+def validate_text_field(field, regex):
     '''
     Utilisation de regex pour la vérification des données du champ
     '''
@@ -79,6 +65,15 @@ def validate_field(field, regex):
     if not pattern.match(field):
         return "Invalid input."
     return None
+
+def valider_date(date_str):
+    try:
+        # Essayer de créer un objet date à partir de la chaîne
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        return None
+    except ValueError:
+        # Si une exception est levée, la date n'est pas valide
+        return "Invalid date."
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -91,22 +86,20 @@ def index():
     if request.method == 'POST':
         nom = request.form.get('champ_nom')
         fonction = request.form.get('champ_fonction')
-        # date_permis = request.form.get('champ_date_permis')
+        date_permis = request.form.get('champ_date_permis')
 
         # Validation des champs
-        error_messages['champ_nom'] = validate_field(nom, REGEX_NOM)
-        error_messages['champ_fonction'] = validate_field(fonction, REGEX_NOM)
-        # error_messages['champ_date_permis'] = validate_field(date_permis, REGEX_DATE)
+        error_messages['champ_nom'] = validate_text_field(nom, REGEX_NOM)
+        error_messages['champ_fonction'] = validate_text_field(fonction, REGEX_NOM)
+        error_messages['champ_date_permis'] = valider_date(date_permis)
 
         # Insertion des valeurs dans la base si tous les champs sont valides
         if not any(error_messages.values()):
             conn = get_db_connection()
             cursor = conn.cursor()
             try:
-                cursor.execute('INSERT INTO formulaire (nom, fonction) VALUES (%s, %s)',
-                               (nom, fonction))
-                # cursor.execute('INSERT INTO formulaire (nom, fonction, date_permis) VALUES (%s, %s, %s)',
-                #                (nom, fonction, date_permis))
+                cursor.execute('INSERT INTO formulaire (nom, fonction, date_permis) VALUES (%s, %s, %s)',
+                               (nom, fonction, date_permis))
                 conn.commit()
             except mysql.connector.Error as err:
                 print(f"Error inserting data: {err}")
