@@ -2,9 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
 import os
 import re
+# from datetime import datetime
 
 # Found here : https://a-tokyo.medium.com/first-and-last-name-validation-for-forms-and-databases-d3edf29ad29d
-REGEX_NOM = "^[a-zA-Z\xC0-\uFFFF]+([ \-']{0,1}[a-zA-Z\xC0-\uFFFF]+){0,2}[.]{0,1}$"
+REGEX_NOM = r"^[a-zA-Z\xC0-\uFFFF]+([ \-']{0,1}[a-zA-Z\xC0-\uFFFF]+){0,2}[.]{0,1}$"
+# REGEX_DATE = r"^\d{4}-\d{2}-\d{2}$"  # Format YYYY-MM-DD
 
 app = Flask(__name__, template_folder='views')
 
@@ -44,6 +46,20 @@ def initialize_database():
                 ('Bob', 'Designer'),
                 ('Charlie', 'Chef de projet');
             """)
+            # cursor.execute("""
+            #     CREATE TABLE IF NOT EXISTS formulaire (
+            #         id INT AUTO_INCREMENT PRIMARY KEY,
+            #         nom VARCHAR(255) NOT NULL,
+            #         fonction VARCHAR(255) NOT NULL,
+            #         date_permis DATE NOT NULL
+            #     );
+            # """)
+            # cursor.execute("""
+            #     INSERT INTO formulaire (nom, fonction, date_permis) VALUES
+            #     ('Alice', 'Développeuse', '2020-01-15'),
+            #     ('Bob', 'Designer', '2019-05-20'),
+            #     ('Charlie', 'Chef de projet', '2018-08-30');
+            # """)
             conn.commit()
             print("Table 'formulaire' created successfully.")
         else:
@@ -61,7 +77,7 @@ def validate_field(field, regex):
 
     pattern = re.compile(regex)
     if not pattern.match(field):
-        return f"Invalid input."
+        return "Invalid input."
     return None
 
 @app.route('/', methods=['GET', 'POST'])
@@ -75,17 +91,22 @@ def index():
     if request.method == 'POST':
         nom = request.form.get('champ_nom')
         fonction = request.form.get('champ_fonction')
+        # date_permis = request.form.get('champ_date_permis')
 
         # Validation des champs
         error_messages['champ_nom'] = validate_field(nom, REGEX_NOM)
-        error_messages['champ_fonction'] = validate_field(fonction, r'')
+        error_messages['champ_fonction'] = validate_field(fonction, REGEX_NOM)
+        # error_messages['champ_date_permis'] = validate_field(date_permis, REGEX_DATE)
 
         # Insertion des valeurs dans la base si tous les champs sont valides
         if not any(error_messages.values()):
             conn = get_db_connection()
             cursor = conn.cursor()
             try:
-                cursor.execute('INSERT INTO formulaire (nom, fonction) VALUES (%s, %s)', (nom, fonction))
+                cursor.execute('INSERT INTO formulaire (nom, fonction) VALUES (%s, %s)',
+                               (nom, fonction))
+                # cursor.execute('INSERT INTO formulaire (nom, fonction, date_permis) VALUES (%s, %s, %s)',
+                #                (nom, fonction, date_permis))
                 conn.commit()
             except mysql.connector.Error as err:
                 print(f"Error inserting data: {err}")
@@ -98,7 +119,7 @@ def index():
     cursor = conn.cursor()
 
     try:
-        cursor.execute('SELECT * FROM formulaire')
+        cursor.execute('SELECT * FROM formulaire ORDER BY id DESC')
         entries = cursor.fetchall()
     except mysql.connector.Error as err:
         print(f"Error fetching data: {err}")
@@ -107,6 +128,5 @@ def index():
         conn.close()
     return render_template('index.html', entries=entries, error_messages=error_messages)
 
-if __name__ == '__main__':
-    initialize_database()
-    app.run(host='0.0.0.0', port=5000)
+initialize_database()
+app.run(host='0.0.0.0', port=5000)

@@ -62,6 +62,13 @@ input[type="submit"]:hover {
 ul {
     list-style-type: none;
     padding: 0;
+    width: 30%;
+    max-height: 400px; /* Hauteur fixe pour la section des résultats */
+    overflow-y: auto; /* Activer le défilement vertical */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
 }
 
 li {
