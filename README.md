@@ -1,37 +1,38 @@
 ## Stack architecture
 
-This application is made up of 3 Docker containers :
+Cette aplication est composée de 3 conteneurs Docker :
 
-|   Service   |     Software     | Port  |              Description              |
-| :---------: | :--------------: | :---: | :-----------------------------------: |
-|   Web app   |   Flask 3.1.0    | 12345 |   Python webserver running the app    |
-|     DB      |   MariaDB 10.6   | 3306  |               Database                |
-| DB frontend | phpMyAdmin 5.2.2 | 12346 | Web interface for database management |
+|   Service   |     Software     | Port  |                     Description                     |
+| :---------: | :--------------: | :---: | :-------------------------------------------------: |
+|   Web app   |   Flask 3.1.0    | 12345 |   Webserver Python faisant tourner l'application    |
+|     DB      |   MariaDB 10.6   | 3306  |                   Base de données                   |
+| DB frontend | phpMyAdmin 5.2.2 | 12346 | Interface web pour la gestion de la base de données |
 
-## Deployment
+## Déploiement
 
-### Prerequisites
+### Prérequis
 
-Docker Engine up and running. See https://docs.docker.com/engine/install/ if needed.
+Docker Engine installé et en fonctionnement sur le machine. Voir https://docs.docker.com/engine/install/ si besoin.
 
-### How to install
-Clone the repo
+### Installation
+
+Cloner le repo :
 ```bash
 git clone https://github.com/colpiche/dev-simulation.git
 ```
 
-Cd into it :
+Cd dans le dossier :
 ```bash
 cd dev-simulation
 ```
 
-Deploy the stack
+Déployer la stack
 ```bash
 docker compose up -d
 ```
 
-### How to use
-To access the webapp, open your browser and go to :
+### Utilisation
+Pour utiliser l'application web, ouvrir un navigateur et se rendre sur l'URL :
 
 ```bash
 http://ip-of-your-server:12345/
@@ -56,6 +57,8 @@ http://ip-of-your-server:12345/
 
 Ce test vérifie le fonctionnement du formulaire initial, avec nom et fonction seulement.
 Sikuli va rentrer des chaines de caractères aléatoires dans les champs et vérifier ensuite si les données s'affichent bien en dessous du formulaire une fois qu'il a été soumis.
+
+![Test 1](img/test1.png)
 
 #### Améliorations possibles
 
